@@ -1,198 +1,487 @@
-SunServe - Solar Panel Installation & Maintenance Management System
-Project Phase I - Backend Foundation
+# Sun-Serve - Solar Panel Installation & Maintenance Management System
 
-Business Case Definition
-Problem Statement
-Solar installation companies face significant operational challenges in managing their business processes. Current systems are fragmented, leading to inefficiencies in tracking customer requests, coordinating technician schedules, managing equipment inventory, and ensuring timely service delivery. There is no centralized platform that integrates installation management, maintenance tracking, service ticketing, and inventory control into a cohesive system with role-based access control.
-Use Case
-SunServe addresses the operational needs of solar installation companies by providing a comprehensive management platform that:
+## 📋 Project Overview
 
-For Customers: Submit installation requests, schedule maintenance services, track their solar panel systems, and create service tickets for issues
-For Technicians: View assigned installations and maintenance jobs, update work status, access equipment specifications, and manage daily schedules
-For Managers: Approve installation requests, assign work to technicians, monitor inventory levels, track service quality metrics, and manage resource allocation
-For Administrators: Oversee all system operations, manage user accounts across all roles, configure system settings, and maintain data integrity
+SunServe is a comprehensive full-stack web application designed to manage solar panel installations, maintenance requests, service tickets, and equipment inventory. The system streamlines operations for solar installation companies by providing a centralized platform for managing customer requests, technician assignments, and business workflows.
 
-Solution
-The proposed solution is a full-stack web application built using the MERN stack (MongoDB, Express.js, React, Node.js) with JWT-based authentication. The system implements:
-Core Architecture
+### Business Problem
 
-RESTful API Backend: Node.js with Express.js handling 29 endpoints across 6 resource categories
-NoSQL Database: MongoDB with Mongoose ODM managing 6 collections with defined relationships
-Authentication & Authorization: JWT-based authentication with role-based access control enforced at the backend level
-Security: bcrypt password hashing, protected routes, input validation, and centralized error handling
+Solar installation companies face challenges in:
 
-Business Workflows
+- **Managing Installation Requests**: Tracking customer inquiries from initial request through completion
+- **Coordinating Technicians**: Efficiently assigning and scheduling technician workloads
+- **Maintenance Tracking**: Organizing routine maintenance and emergency repairs
+- **Inventory Management**: Monitoring solar panel equipment and supplies
+- **Service Quality**: Ensuring timely responses to customer service tickets
+- **Data Organization**: Maintaining accurate records across multiple business processes
 
-Installation Request Workflow: Customer submission → Manager approval → Technician assignment → Job completion → Status tracking
-Maintenance Management: Customer request → Schedule creation → Technician assignment → Service delivery → Record keeping
-Service Ticket System: Issue creation → Priority assignment → Technician assignment → Resolution → Closure
-Equipment Inventory: Stock tracking → Low inventory alerts → Restock management → Equipment allocation
-User Authentication: Role-based registration → Secure login → Protected resource access → Session management
+SunServe solves these problems by providing a role-based management system that enforces business rules, automates workflows, and ensures data integrity.
 
-Data Models
-User
-Purpose: Manages all system users across four roles (Admin, Manager, Technician, Customer)
-Fields:
+---
 
-Authentication: email (unique), password (hashed), role
-Personal Information: name, phone, address (street, city, state, zipCode)
-Status: isActive, createdAt
+## 🎯 Business Workflows
 
-Relationships: Referenced in installations (customer, assignedTechnician), maintenance requests, service tickets, and schedules
+### 1. User Authentication Workflow
 
-Installation
-Purpose: Tracks solar panel installation requests from inquiry through completion
-Fields:
+- Account creation with role assignment (Customer, Technician, Manager, Admin)
+- Secure login using JWT-based authentication
+- Role-based access control to protected resources
+- Session management and token validation
 
-Customer Information: customer (ref: User), address
-System Specifications: systemSize, panelType, numberOfPanels, estimatedCost
-Workflow: status (requested, approved, scheduled, in_progress, completed, cancelled)
-Assignment: assignedTechnician (ref: User), approvedBy (ref: User)
-Dates: requestedDate, scheduledDate, completedDate
+### 2. Installation Request Workflow
 
-Relationships: Linked to User (customer, technician, approver), referenced by MaintenanceRequest
+1. **Customer** submits installation request with system specifications
+2. **Manager/Admin** reviews and approves request
+3. **Manager** assigns installation to qualified technician
+4. **Technician** performs installation and updates status
+5. **System** tracks progress from request to completion
 
-MaintenanceRequest
-Purpose: Manages ongoing maintenance and service needs for installed systems
-Fields:
+### 3. Maintenance Management Workflow
 
-References: customer (ref: User), installation (ref: Installation)
-Request Details: requestType (routine, repair, inspection, cleaning, upgrade), description, priority
-Workflow: status (requested, scheduled, in_progress, completed, cancelled)
-Assignment: assignedTechnician (ref: User)
-Tracking: scheduledDate, completedDate, estimatedDuration, actualDuration, cost
+1. **Customer** requests maintenance for existing installation
+2. **System** validates installation ownership
+3. **Manager** schedules maintenance and assigns technician
+4. **Technician** performs service and records details
+5. **System** updates maintenance history and costs
 
-Relationships: Links Customer → Installation → Maintenance history
+### 4. Service Ticket Workflow
 
-ServiceTicket
-Purpose: Tracks customer service issues and internal support requests
-Fields:
+1. **Any User** creates service ticket for issues or inquiries
+2. **Manager** prioritizes and assigns tickets to appropriate staff
+3. **Assigned Staff** investigates and resolves ticket
+4. **System** tracks resolution time and customer satisfaction
 
-Identification: ticketNumber (auto-generated: TICKET-000001), title, description
-Classification: category (technical, billing, general, emergency, warranty), priority, status
-Assignment: createdBy (ref: User), assignedTo (ref: User)
-Context: relatedInstallation (ref: Installation), relatedMaintenance (ref: MaintenanceRequest)
-Resolution: resolution, closedAt
+### 5. Equipment Inventory Workflow
 
-Relationships: Can link to installations and maintenance requests for context
+- **Manager/Admin** adds equipment to inventory
+- **System** tracks stock levels and alerts on low inventory
+- **Technicians** reference available equipment for installations
+- **Managers** monitor equipment costs and supplier information
 
-Equipment
-Purpose: Manages solar panel equipment and component inventory
-Fields:
+---
 
-Identification: name, category, manufacturer, model
-Specifications: power, voltage, dimensions, weight, warranty, efficiency
-Inventory: quantity, minimumStock, unitPrice, location
-Supplier: supplier.name, supplier.contact, supplier.email
-Tracking: lastRestocked, isActive
+## 👥 User Roles
 
-Relationships: Referenced when assigning equipment to installations
+### Customer
 
-Schedule
-Purpose: Manages technician work schedules and prevents double-booking
-Fields:
+- **Permissions**:
+  - Create installation requests
+  - Submit maintenance requests for their installations
+  - Create service tickets
+  - View their own installations, maintenance history, and tickets
+- **Restrictions**: Cannot access other customers' data, cannot approve requests
 
-Assignment: technician (ref: User), date, timeSlot (morning, afternoon, evening)
-Job Details: jobType (installation, maintenance, inspection, repair)
-References: relatedInstallation, relatedMaintenance
-Status: status (scheduled, in_progress, completed, cancelled, rescheduled)
-Location: street, city, state, zipCode
-Timing: estimatedDuration, actualStartTime, actualEndTime
+### Technician
 
-Relationships: Links technicians to specific jobs with time constraints
-Constraints: Unique index on (technician + date + timeSlot) prevents double-booking
+- **Permissions**:
+  - View assigned installations and maintenance requests
+  - Update status of assigned work
+  - Create service tickets
+  - View equipment inventory
+- **Restrictions**: Cannot approve installations, limited to assigned work
 
-Technology Stack
-Backend
+### Manager
 
-Runtime: Node.js
-Framework: Express.js v4.18.2
-Database: MongoDB with Mongoose ODM v8.0.3
-Authentication: JSON Web Tokens (jsonwebtoken v9.0.2)
-Security: bcryptjs v2.4.3 for password hashing
-Environment: dotenv v16.3.1 for configuration
-CORS: cors v2.8.5 for cross-origin requests
+- **Permissions**:
+  - Approve installation requests
+  - Assign work to technicians
+  - Manage equipment inventory
+  - View all installations, maintenance, and tickets
+  - Assign service tickets
+- **Restrictions**: Cannot delete users, limited administrative functions
 
-Development Tools
+### Admin
 
-Hot Reload: nodemon v3.0.2
-Version Control: Git & GitHub (Private Repository)
-API Testing: Postman / Thunder Client
-Database GUI: MongoDB Compass (Optional)
+- **Permissions**:
+  - Full system access
+  - User management (create, update, delete)
+  - System configuration
+  - All manager permissions
+- **Restrictions**: None
 
-Setup Instructions
-Prerequisites
+---
 
-Node.js v14 or higher
-MongoDB (local installation) OR MongoDB Atlas account (cloud)
-npm package manager
-Git
+## 🛠 Technology Stack
 
-Installation Steps
+### Backend
 
-Clone Repository
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JSON Web Tokens (JWT)
+- **Password Security**: bcryptjs
 
-bash git clone https://github.com/YOUR_USERNAME/sunserve.git
-cd sunserve
+### Development Tools
 
-Install Dependencies
+- **Version Control**: Git & GitHub
+- **API Testing**: Postman
+- **Development Server**: Nodemon
 
-bash npm install
+### Frontend (Phase III)
 
-Configure Environment Variables
-Create backend/.env file:
+- **Framework**: React
+- **Integration**: REST API communication
 
-env PORT=5000
-NODE_ENV=development
-MONGODB_URI=mongodb://localhost:27017/sunserve
-JWT_SECRET=your_secure_secret_key_here
-JWT_EXPIRE=7d
-CLIENT_URL=http://localhost:3000
+---
 
-Start MongoDB (if using local installation)
+## 📊 Database Architecture
 
-bash mongod
+### Collections (6 Total)
 
-Start Development Server
+1. **Users** - Customer, Technician, Manager, Admin accounts
+2. **Installations** - Solar panel installation records
+3. **MaintenanceRequests** - Maintenance and repair requests
+4. **ServiceTickets** - Customer service and issue tracking
+5. **Equipment** - Inventory management for solar components
+6. **Schedules** - Technician scheduling and availability
 
-bash npm run dev
+### Key Relationships
 
-Verify Installation
+- Users → Installations (customer relationship)
+- Users → Installations (technician assignment)
+- Installations → MaintenanceRequests (service history)
+- Users → ServiceTickets (creator and assignee)
+- Users → Schedules (technician schedules)
 
-bash curl http://localhost:5000/api/health
+---
 
-API Endpoints Summary
-Total Endpoints: 29 (Exceeds requirement of 10)
-Protected Endpoints: 26 (Exceeds requirement of 3)
+## 🔌 API Endpoints
 
-Authentication: 3 endpoints
-User Management: 5 endpoints
-Installations: 5 endpoints
-Maintenance: 5 endpoints
-Service Tickets: 5 endpoints
-Equipment: 6 endpoints
+### Authentication Routes (`/api/auth`)
 
-Full API documentation available in project documentation.
+- `POST /api/auth/register` - Register new user (Public)
+- `POST /api/auth/login` - User login (Public)
+- `GET /api/auth/me` - Get current user (Protected)
 
-Security Implementation
+### User Routes (`/api/users`)
 
-Password Security: bcrypt hashing with salt rounds
-Token Management: JWT with configurable expiration
-Role-Based Access: Four roles (Admin, Manager, Technician, Customer)
-Backend Enforcement: All authorization server-side
-Input Validation: Middleware validates all requests
-Error Handling: Centralized, secure error responses
+- `GET /api/users` - Get all users (Admin only)
+- `GET /api/users/:id` - Get single user (Protected)
+- `PUT /api/users/:id` - Update user (Protected)
+- `DELETE /api/users/:id` - Delete user (Admin only)
+- `GET /api/users/role/:role` - Get users by role (Admin/Manager)
 
-Project Status
-Phase I - Backend Foundation -- COMPLETED
-Phase II - Database & Security Integration (WORKING)
-Phase III - Frontend & Deployment (FUTURE)
+### Installation Routes (`/api/installations`)
 
-Team Members
+- `POST /api/installations` - Create installation request (Customer)
+- `GET /api/installations` - Get installations (Protected, role-filtered)
+- `GET /api/installations/:id` - Get single installation (Protected)
+- `PUT /api/installations/:id` - Update installation (Manager/Admin)
+- `DELETE /api/installations/:id` - Delete installation (Admin only)
 
-Member 1: [Zixin Li] - Project Setup & Configuration
-Member 2: [Kim Joson] - Authentication & User Management
-Member 3: [Thi Tieu Man Tran] - Installation Management
-Member 4: [Gurleen Kaur] - Maintenance Requests
-Member 5: [Adit Rakeshkumar Rana] - Service Tickets & Equipment
-Member 6: [Rosenoor Singh Dhillon] - Scheduling & Middleware
+### Maintenance Routes (`/api/maintenance`)
+
+- `POST /api/maintenance` - Create maintenance request (Customer)
+- `GET /api/maintenance` - Get maintenance requests (Protected, role-filtered)
+- `GET /api/maintenance/:id` - Get single request (Protected)
+- `PUT /api/maintenance/:id` - Update request (Manager/Admin/Technician)
+- `DELETE /api/maintenance/:id` - Delete request (Admin only)
+
+### Service Ticket Routes (`/api/tickets`)
+
+- `POST /api/tickets` - Create service ticket (Protected)
+- `GET /api/tickets` - Get tickets (Protected, role-filtered)
+- `GET /api/tickets/:id` - Get single ticket (Protected)
+- `PUT /api/tickets/:id` - Update ticket (Protected)
+- `DELETE /api/tickets/:id` - Delete ticket (Admin only)
+
+### Equipment Routes (`/api/equipment`)
+
+- `POST /api/equipment` - Add equipment (Admin/Manager)
+- `GET /api/equipment` - Get all equipment (Protected)
+- `GET /api/equipment/:id` - Get single equipment (Protected)
+- `PUT /api/equipment/:id` - Update equipment (Admin/Manager)
+- `DELETE /api/equipment/:id` - Delete equipment (Admin only)
+- `GET /api/equipment/lowstock` - Get low stock items (Admin/Manager)
+
+### System Routes
+
+- `GET /api/health` - Health check (Public)
+
+**Total Endpoints**: 29 (exceeds 10 minimum requirement)
+**Protected Endpoints**: 26 (exceeds 3 minimum requirement)
+
+---
+
+## 🚀 Setup Instructions
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- MongoDB (local installation or MongoDB Atlas account)
+- npm (comes with Node.js)
+- Git
+
+### Installation Steps
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/sunserve.git
+   cd sunserve/sunserve-backend
+   ```
+
+2. **Install Dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables**
+   - Copy `.env.example` to `.env`
+   - Update the following variables:
+
+   ```env
+   PORT=5000
+   NODE_ENV=development
+   MONGODB_URI=your_mongodb_connection_string
+   JWT_SECRET=your_secure_secret_key
+   JWT_EXPIRE=7d
+   CLIENT_URL=http://localhost:3000
+   ```
+
+4. **Start MongoDB**
+   - **Local MongoDB**:
+     ```bash
+     mongod
+     ```
+   - **MongoDB Atlas**: Use connection string in MONGODB_URI
+
+5. **Start the Development Server**
+
+   ```bash
+   npm run dev
+   ```
+
+   The server will start on `http://localhost:5000`
+
+6. **Verify Installation**
+
+   ```bash
+   curl http://localhost:5000/api/health
+   ```
+
+   Expected response:
+
+   ```json
+   {
+     "success": true,
+     "message": "SunServe API is running successfully",
+     "timestamp": "2024-02-12T...",
+     "environment": "development"
+   }
+   ```
+
+---
+
+## 🧪 Testing with Postman
+
+1. **Import Collection**: Create a Postman collection for SunServe
+2. **Set Environment Variables**:
+   - `BASE_URL`: `http://localhost:5000/api`
+   - `TOKEN`: (will be set after login)
+
+3. **Test Authentication**:
+   - Register a user: `POST {{BASE_URL}}/auth/register`
+   - Login: `POST {{BASE_URL}}/auth/login`
+   - Copy the token from login response
+   - Add to Authorization header: `Bearer YOUR_TOKEN`
+
+4. **Test Protected Routes**:
+   - Use the token in Authorization header for all protected endpoints
+   - Test role-based access control by creating users with different roles
+
+---
+
+## 📁 Project Structure
+
+```
+sunserve-backend/
+│
+├── config/
+│   └── database.js          # MongoDB connection
+│
+├── controllers/
+│   ├── authController.js    # Authentication logic
+│   ├── userController.js    # User management
+│   ├── installationController.js
+│   ├── maintenanceController.js
+│   ├── ticketController.js
+│   └── equipmentController.js
+│
+├── middleware/
+│   ├── auth.js              # JWT authentication
+│   ├── authorize.js         # Role-based authorization
+│   ├── errorHandler.js      # Centralized error handling
+│   └── validate.js          # Request validation
+│
+├── models/
+│   ├── User.js              # User schema
+│   ├── Installation.js      # Installation schema
+│   ├── MaintenanceRequest.js
+│   ├── ServiceTicket.js
+│   ├── Equipment.js
+│   └── Schedule.js
+│
+├── routes/
+│   ├── authRoutes.js
+│   ├── userRoutes.js
+│   ├── installationRoutes.js
+│   ├── maintenanceRoutes.js
+│   ├── ticketRoutes.js
+│   └── equipmentRoutes.js
+│
+├── utils/
+│   └── constants.js         # Application constants
+│
+├── .env                     # Environment variables (not in repo)
+├── .env.example             # Environment template
+├── .gitignore
+├── package.json
+├── README.md
+└── server.js                # Application entry point
+```
+
+---
+
+## 🔒 Security Features
+
+### Implemented Security Measures
+
+1. **Password Hashing**: Using bcryptjs with salt rounds
+2. **JWT Authentication**: Secure token-based authentication
+3. **Role-Based Authorization**: Backend enforcement of user permissions
+4. **Input Validation**: Request validation middleware
+5. **Error Handling**: Secure error messages (no stack traces in production)
+6. **Environment Variables**: Sensitive data stored in .env file
+7. **CORS Configuration**: Controlled cross-origin requests
+8. **Protected Routes**: Middleware-based route protection
+
+### Security Best Practices
+
+- Passwords never returned in API responses
+- Sensitive routes require authentication token
+- Role-based access enforced at backend level
+- SQL injection prevented through Mongoose ODM
+- XSS protection through input validation
+
+---
+
+## 📈 Project Status
+
+### Phase I - Backend Foundation ✅
+
+- [x] Project setup and configuration
+- [x] Database connection established
+- [x] 6 MongoDB collections with schemas
+- [x] 29 RESTful API endpoints
+- [x] Authentication and authorization
+- [x] Error handling middleware
+- [x] GitHub repository initialized
+- [x] README documentation
+
+### Phase II - Database and Security Integration (Upcoming)
+
+- [ ] Full MongoDB integration and testing
+- [ ] Enhanced security features
+- [ ] Data validation and integrity enforcement
+- [ ] Advanced authentication features
+
+### Phase III - Frontend Integration and Deployment (Future)
+
+- [ ] React frontend development
+- [ ] API integration
+- [ ] Deployment to hosting platform
+- [ ] Production configuration
+
+---
+
+## 👥 Team Members
+
+- **Member 1**: [Name] - Project Setup & Authentication
+- **Member 2**: [Name] - User Management & Authorization
+- **Member 3**: [Name] - Installation & Equipment Management
+- **Member 4**: [Name] - Maintenance & Service Tickets
+- **Member 5**: [Name] - Middleware & Error Handling
+
+---
+
+## 📝 Development Guidelines
+
+### Git Workflow
+
+1. Create feature branches from main
+2. Write meaningful commit messages
+3. Each team member must make at least 5 meaningful commits
+4. Pull latest changes before pushing
+5. Resolve conflicts before merging
+
+### Coding Standards
+
+- Use consistent naming conventions
+- Add comments for complex logic
+- Follow RESTful API design principles
+- Validate all user inputs
+- Handle errors gracefully
+
+---
+
+## 🐛 Known Issues / Future Enhancements
+
+### Phase I Limitations
+
+- MongoDB must be running locally or connection string configured
+- No frontend interface yet (API-only)
+- Limited testing coverage
+
+### Planned Enhancements (Phase II & III)
+
+- Email notifications for status updates
+- File upload for installation photos
+- Advanced reporting and analytics
+- Real-time technician tracking
+- Mobile app support
+
+---
+
+## 📚 Additional Resources
+
+- [Express.js Documentation](https://expressjs.com/)
+- [MongoDB Documentation](https://docs.mongodb.com/)
+- [Mongoose Documentation](https://mongoosejs.com/)
+- [JWT Documentation](https://jwt.io/)
+- [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices)
+
+---
+
+## 📄 License
+
+This project is developed as part of a course assignment at Humber College.
+
+---
+
+## 🤝 Support
+
+For questions or issues:
+
+1. Check the course project specification document
+2. Review this README
+3. Contact team members
+4. Reach out to the course instructor
+
+---
+
+## 🎓 Academic Integrity
+
+All code in this repository is original work by the team members listed above. Any external libraries or code snippets are properly attributed. This project adheres to Humber College's Academic Integrity Policy.
+
+---
+
+**Course**: Modern Web Technologies  
+**Institution**: Humber College  
+**Semester**: Winter 2024  
+**Project Weight**: 30% of final grade
+
+---
+
+_Last Updated: February 2024_
