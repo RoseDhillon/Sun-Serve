@@ -1,0 +1,31 @@
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h3 class="h5 mb-3">Edit Client</h3>
+
+    <form action="/clients/<%= client.id %>" method="post" class="row g-3">
+      <div class="col-12">
+        <label class="form-label">Full Name</label>
+        <input name="fullName" required value="<%= client.fullName %>" class="form-control" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input name="email" type="email" required value="<%= client.email %>" class="form-control" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Risk Category</label>
+        <select name="riskCategory" class="form-select">
+          <option <%= client.riskCategory === 'Low' ? 'selected' : '' %>>Low</option>
+          <option <%= client.riskCategory === 'Medium' ? 'selected' : '' %>>Medium</option>
+          <option <%= client.riskCategory === 'High' ? 'selected' : '' %>>High</option>
+        </select>
+      </div>
+
+      <div class="col-12 text-end">
+        <a href="/clients/<%= client.id %>" class="btn btn-outline-secondary me-2">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
