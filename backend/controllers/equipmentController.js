@@ -26,11 +26,14 @@ exports.createEquipment = async (req, res, next) => {
     ]
 
     const payload = pick(req.body, allowed)
-    if (payload.quantity && payload.quantity > 0) payload.lastRestocked = Date.now()
+    if (payload.quantity && payload.quantity > 0)
+      payload.lastRestocked = Date.now()
 
     const equipment = await Equipment.create(payload)
 
-    res.status(201).json({ success: true, message: "Equipment added", data: equipment })
+    res
+      .status(201)
+      .json({ success: true, message: "Equipment added", data: equipment })
   } catch (error) {
     next(error)
   }
@@ -47,14 +50,20 @@ exports.getEquipment = async (req, res, next) => {
 
     const filter = {}
     if (req.query.category) filter.category = req.query.category
-    if (req.query.isActive !== undefined) filter.isActive = req.query.isActive === "true"
+    if (req.query.isActive !== undefined)
+      filter.isActive = req.query.isActive === "true"
 
     const [count, items] = await Promise.all([
       Equipment.countDocuments(filter),
-      Equipment.find(filter).sort(req.query.sort || "name").skip(skip).limit(limit),
+      Equipment.find(filter)
+        .sort(req.query.sort || "name")
+        .skip(skip)
+        .limit(limit),
     ])
 
-    res.status(200).json({ success: true, count, page, pageSize: items.length, data: items })
+    res
+      .status(200)
+      .json({ success: true, count, page, pageSize: items.length, data: items })
   } catch (error) {
     next(error)
   }
@@ -66,7 +75,10 @@ exports.getEquipment = async (req, res, next) => {
 exports.getEquipmentItem = async (req, res, next) => {
   try {
     const equipment = await Equipment.findById(req.params.id)
-    if (!equipment) return res.status(404).json({ success: false, error: "Equipment not found" })
+    if (!equipment)
+      return res
+        .status(404)
+        .json({ success: false, error: "Equipment not found" })
     res.status(200).json({ success: true, data: equipment })
   } catch (error) {
     next(error)
@@ -79,7 +91,10 @@ exports.getEquipmentItem = async (req, res, next) => {
 exports.updateEquipment = async (req, res, next) => {
   try {
     const equipment = await Equipment.findById(req.params.id)
-    if (!equipment) return res.status(404).json({ success: false, error: "Equipment not found" })
+    if (!equipment)
+      return res
+        .status(404)
+        .json({ success: false, error: "Equipment not found" })
 
     const allowed = [
       "name",
@@ -98,14 +113,17 @@ exports.updateEquipment = async (req, res, next) => {
 
     const payload = pick(req.body, allowed)
     // If restocking, update lastRestocked date
-    if (payload.quantity !== undefined && payload.quantity > equipment.quantity) payload.lastRestocked = Date.now()
+    if (payload.quantity !== undefined && payload.quantity > equipment.quantity)
+      payload.lastRestocked = Date.now()
 
     const updated = await Equipment.findByIdAndUpdate(req.params.id, payload, {
       new: true,
       runValidators: true,
     })
 
-    res.status(200).json({ success: true, message: "Equipment updated", data: updated })
+    res
+      .status(200)
+      .json({ success: true, message: "Equipment updated", data: updated })
   } catch (error) {
     next(error)
   }
@@ -117,7 +135,10 @@ exports.updateEquipment = async (req, res, next) => {
 exports.deleteEquipment = async (req, res, next) => {
   try {
     const equipment = await Equipment.findById(req.params.id)
-    if (!equipment) return res.status(404).json({ success: false, error: "Equipment not found" })
+    if (!equipment)
+      return res
+        .status(404)
+        .json({ success: false, error: "Equipment not found" })
 
     await equipment.deleteOne()
     res.status(200).json({ success: true, message: "Equipment deleted" })
@@ -131,7 +152,10 @@ exports.deleteEquipment = async (req, res, next) => {
 // @access  Private (Admin/Manager)
 exports.getLowStockEquipment = async (req, res, next) => {
   try {
-    const items = await Equipment.find({ $expr: { $lte: ["$quantity", "$minimumStock"] }, isActive: true })
+    const items = await Equipment.find({
+      $expr: { $lte: ["$quantity", "$minimumStock"] },
+      isActive: true,
+    })
     res.status(200).json({ success: true, count: items.length, data: items })
   } catch (error) {
     next(error)
