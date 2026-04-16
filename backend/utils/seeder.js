@@ -16,7 +16,7 @@ const Schedule = require("../models/Schedule")
 // Connect to DB
 const connectDB = async () => {
   await mongoose.connect(process.env.MONGODB_URI)
-  console.log("✅ MongoDB Connected for seeding...")
+  console.log("MongoDB Connected for seeding...")
 }
 
 // Sample data
@@ -158,7 +158,7 @@ const importData = async () => {
     await connectDB()
 
     // Clear existing data
-    console.log("🗑️  Clearing existing data...")
+    console.log("Clearing existing data...")
     await User.deleteMany()
     await Installation.deleteMany()
     await MaintenanceRequest.deleteMany()
@@ -167,7 +167,7 @@ const importData = async () => {
     await Schedule.deleteMany()
 
     // Hash passwords and create users
-    console.log("👤 Creating users...")
+    console.log("Creating users...")
     const hashedUsers = await Promise.all(
       users.map(async (user) => {
         const salt = await bcrypt.genSalt(10)
@@ -176,7 +176,7 @@ const importData = async () => {
       }),
     )
     const createdUsers = await User.insertMany(hashedUsers)
-    console.log(`✅ Created ${createdUsers.length} users`)
+    console.log(`Created ${createdUsers.length} users`)
 
     // Get user IDs
     const admin = createdUsers.find((u) => u.role === "admin")
@@ -186,12 +186,12 @@ const importData = async () => {
     const customer2 = createdUsers.find((u) => u.email === "john@example.com")
 
     // Create equipment
-    console.log("📦 Creating equipment...")
+    console.log("Creating equipment...")
     const createdEquipment = await Equipment.insertMany(equipment)
-    console.log(`✅ Created ${createdEquipment.length} equipment items`)
+    console.log(`Created ${createdEquipment.length} equipment items`)
 
     // Create installations
-    console.log("🏗️  Creating installations...")
+    console.log("Creating installations...")
     const installations = [
       {
         customer: customer1._id,
@@ -218,10 +218,10 @@ const importData = async () => {
       },
     ]
     const createdInstallations = await Installation.insertMany(installations)
-    console.log(`✅ Created ${createdInstallations.length} installations`)
+    console.log(`Created ${createdInstallations.length} installations`)
 
     // Create maintenance requests
-    console.log("🔧 Creating maintenance requests...")
+    console.log("Creating maintenance requests...")
     const maintenanceRequests = [
       {
         customer: customer1._id,
@@ -238,10 +238,10 @@ const importData = async () => {
     ]
     const createdMaintenance =
       await MaintenanceRequest.insertMany(maintenanceRequests)
-    console.log(`✅ Created ${createdMaintenance.length} maintenance requests`)
+    console.log(`Created ${createdMaintenance.length} maintenance requests`)
 
     // Create service tickets
-    console.log("🎫 Creating service tickets...")
+    console.log("Creating service tickets...")
     const tickets = [
       {
         title: "Panel producing less power than expected",
@@ -264,10 +264,10 @@ const importData = async () => {
       },
     ]
     const createdTickets = await ServiceTicket.insertMany(tickets)
-    console.log(`✅ Created ${createdTickets.length} service tickets`)
+    console.log(`Created ${createdTickets.length} service tickets`)
 
     // Create schedules
-    console.log("📅 Creating schedules...")
+    console.log("Creating schedules...")
     const schedules = [
       {
         technician: technician._id,
@@ -281,17 +281,17 @@ const importData = async () => {
       },
     ]
     const createdSchedules = await Schedule.insertMany(schedules)
-    console.log(`✅ Created ${createdSchedules.length} schedules`)
+    console.log(`Created ${createdSchedules.length} schedules`)
 
-    console.log("\n🎉 Data seeding completed successfully!")
-    console.log("\n📊 Summary:")
+    console.log("\nData seeding completed successfully!")
+    console.log("\nSummary:")
     console.log(`   Users: ${createdUsers.length}`)
     console.log(`   Equipment: ${createdEquipment.length}`)
     console.log(`   Installations: ${createdInstallations.length}`)
     console.log(`   Maintenance Requests: ${createdMaintenance.length}`)
     console.log(`   Service Tickets: ${createdTickets.length}`)
     console.log(`   Schedules: ${createdSchedules.length}`)
-    console.log("\n🔐 Test Credentials:")
+    console.log("\nTest Credentials:")
     console.log("   Admin: admin@sunserve.com / admin123")
     console.log("   Manager: manager@sunserve.com / manager123")
     console.log("   Technician: tech1@sunserve.com / tech123")
@@ -300,7 +300,7 @@ const importData = async () => {
 
     process.exit(0)
   } catch (error) {
-    console.error("❌ Error seeding data:", error)
+    console.error("Error seeding data:", error)
     process.exit(1)
   }
 }
@@ -310,7 +310,7 @@ const deleteData = async () => {
   try {
     await connectDB()
 
-    console.log("🗑️  Deleting all data...")
+    console.log("Deleting all data...")
     await User.deleteMany()
     await Installation.deleteMany()
     await MaintenanceRequest.deleteMany()
@@ -318,10 +318,10 @@ const deleteData = async () => {
     await Equipment.deleteMany()
     await Schedule.deleteMany()
 
-    console.log("✅ All data deleted successfully!")
+    console.log("All data deleted successfully!")
     process.exit(0)
   } catch (error) {
-    console.error("❌ Error deleting data:", error)
+    console.error("Error deleting data:", error)
     process.exit(1)
   }
 }
