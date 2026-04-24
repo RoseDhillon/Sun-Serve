@@ -9,7 +9,7 @@ const { sanitizeInput, sanitizeStringFields } = require("./middleware/sanitize")
 const { devLogger, prodLogger, logError } = require("./middleware/logger")
 
 // Load environment variables
-dotenv.config()
+dotenv.config({ path: __dirname + "/.env" })
 
 // Initialize express app
 const app = express()

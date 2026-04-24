@@ -3,7 +3,7 @@ const dotenv = require("dotenv")
 const bcrypt = require("bcryptjs")
 
 // Load env vars
-dotenv.config({ path: "./.env" })
+dotenv.config({ path: __dirname + "/../.env" })
 
 // Load models
 const User = require("../models/User")
